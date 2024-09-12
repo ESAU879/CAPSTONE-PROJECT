@@ -1,38 +1,97 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../../FirebaseConfig'; // Import the `auth` object
 
 const RegistrationScreen = ({ navigation }) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const handleRegister = async () => {
+    if (firstName && lastName && email && password && phone) {
+      try {
+        // Create a new user with email and password using Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Optionally update the user's display name
+        await updateProfile(userCredential.user, {
+          displayName: `${firstName} ${lastName}`,
+        });
+
+        Alert.alert('Registration Successful', 'User has been registered successfully');
+        navigation.navigate('Login'); // Navigate to the home screen or login screen
+      } catch (error) {
+        Alert.alert('Registration Failed', error.message);
+      }
+    } else {
+      Alert.alert('Missing Fields', 'Please fill in all fields');
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.profileContainer}>
-        <View style={styles.profilePicture}>
-          <TouchableOpacity style={styles.editIcon}>
-            <Text style={styles.editIconText}>✏️</Text>
-          </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.container}>
+          {/* Positioned logo in front of the form container */}
+          <Image
+            source={require('../../assets/logo.png')} // Adjust path according to your project structure
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.formContainer}>
+            <Text style={styles.label}>Register</Text>
+            <View style={styles.row}>
+              <TextInput
+                style={[styles.input, styles.halfInput]}
+                placeholder="First Name"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+              <TextInput
+                style={[styles.input, styles.halfInput, styles.lastNameInput]}
+                placeholder="Last Name"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="E-mail"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone No."
+              value={phone}
+              onChangeText={setPhone}
+            />
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={handleRegister}>
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={styles.formContainer}>
-        <Text style={styles.label}>Register</Text>
-        <View style={styles.row}>
-          <TextInput style={[styles.input, styles.halfInput]} placeholder="First Name" />
-          <TextInput style={[styles.input, styles.halfInput, styles.lastNameInput]} placeholder="Last Name" />
-        </View>
-        <TextInput style={styles.input} placeholder="E-mail" keyboardType="email-address" />
-        <TextInput style={styles.input} placeholder="Password" secureTextEntry />
-        <View style={styles.row}>
-          <TextInput style={[styles.input, styles.halfInput]} placeholder="Birthday" />
-          <TextInput style={[styles.input, styles.halfInput, styles.lastNameInput]} placeholder="Phone No." />
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -41,35 +100,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFF7D6',
   },
-  profileContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF7D6',
-    paddingTop: 50,
-  },
-  profilePicture: {
+  // Positioning the logo above the form
+  logo: {
     width: 150,
     height: 150,
-    borderRadius: 100,
-    backgroundColor: '#8A2BE2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 70, // Adjusted to move the profile picture down
-  },
-  editIcon: {
     position: 'absolute',
-    bottom: -5,
-    right: -5,
-    backgroundColor: '#ffffff',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  editIconText: {
-    fontSize: 16,
-    color: '#8A2BE2',
+    top: 30, // Adjust the value as needed to fit your design
+    alignSelf: 'center', // Centers the logo horizontally
+    zIndex: 1, // Ensures logo is above the form
   },
   formContainer: {
     flex: 1,
@@ -77,8 +115,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 30,
-    paddingTop: 70,
-    marginTop: -50, // Ensures form container overlaps profile picture
+    paddingTop: 70, // Adding extra padding to prevent overlap with the logo
+    marginTop: 200,
   },
   label: {
     fontSize: 22,

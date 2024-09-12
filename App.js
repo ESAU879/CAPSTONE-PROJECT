@@ -28,6 +28,7 @@ const Stack = createStackNavigator();
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Tab" component={TabNavigation} />
+            <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Register" component={RegistrationScreen} />
             <Stack.Screen name="Rooms" component={RoomScreen} />
             <Stack.Screen name="Payment" component={PaymentScreen} />

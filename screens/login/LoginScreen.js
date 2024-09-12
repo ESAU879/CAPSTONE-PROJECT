@@ -1,9 +1,23 @@
-import React from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../FirebaseConfig'; // Import the `auth` object from your Firebase config
 
 const LoginScreen = ({ navigation }) => {
-  const handleLogin = () => {
-    navigation.replace('Tab'); // Navigate to the home screen after login
+  const [email, setEmail] = useState(''); // Add state to capture email input
+  const [password, setPassword] = useState(''); // Add state to capture password input
+
+  const handleLogin = async () => {
+    try {
+      // Sign in the user using email and password with Firebase Auth
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // Navigate to the home screen after a successful login
+      navigation.replace('Tab');
+    } catch (error) {
+      // Handle authentication errors
+      Alert.alert('Login Failed', error.message);
+    }
   };
 
   return (
@@ -18,15 +32,19 @@ const LoginScreen = ({ navigation }) => {
           placeholder="admin@email.com"
           keyboardType="email-address"
           placeholderTextColor="#aaa"
+          value={email} // Link the state with TextInput for email
+          onChangeText={setEmail} // Update email state on change
         />
         <TextInput
           style={styles.input}
           placeholder="***"
           secureTextEntry
           placeholderTextColor="#aaa"
+          value={password} // Link the state with TextInput for password
+          onChangeText={setPassword} // Update password state on change
         />
         <View style={styles.linkContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
             <Text style={styles.linkText}>Register</Text>
           </TouchableOpacity>
           <TouchableOpacity>
@@ -42,7 +60,7 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.divider} />
         </View>
         <TouchableOpacity style={styles.googleButton}>
-          <Image source = {require('../../assets/google.png')} style={styles.googleIcon}/>
+          <Image source={require('../../assets/google.png')} style={styles.googleIcon} />
           <Text style={styles.googleButtonText}>Google</Text>
         </TouchableOpacity>
       </View>
@@ -72,7 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 40,
     padding: 40,
-    alignItems: 'right',
+    alignItems: 'center',
   },
   loginText: {
     fontSize: 24,
